@@ -12,6 +12,32 @@ export default function Welcome() {
       .then(data => setDevices(data))
       .catch(err => console.error(err));
   }, []);
+
+  // Auto-logout user after 5 minutes of inactivity
+  useEffect(() => {
+    let timeoutId;
+    const INACTIVITY_TIME = 5 * 60 * 1000; // 5 minutes
+
+    const handleInactivity = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        // Sign out user by redirecting to login page
+        navigate('/', { replace: true });
+      }, INACTIVITY_TIME);
+    };
+
+    // Listen for user activity
+    const events = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+    events.forEach(event => window.addEventListener(event, handleInactivity));
+
+    // Initialize the timer
+    handleInactivity();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach(event => window.removeEventListener(event, handleInactivity));
+    };
+  }, [navigate]);
   const [selectedId, setSelectedId] = useState(null);
 
   const selectedDevice = devices.find(d => d.id === selectedId);
